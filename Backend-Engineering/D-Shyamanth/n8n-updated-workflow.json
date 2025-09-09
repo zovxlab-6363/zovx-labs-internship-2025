@@ -1,0 +1,215 @@
+{
+  "name": "Newsletter zovx - Updated with ngrok",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "demo-newsletter",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "webhookId": "demo-newsletter"
+    },
+    {
+      "parameters": {
+        "url": "https://718b6f8581a1.ngrok-free.app/subscribers",
+        "options": {
+          "headers": {
+            "ngrok-skip-browser-warning": "true"
+          }
+        }
+      },
+      "id": "get-subscribers",
+      "name": "Get Subscribers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://718b6f8581a1.ngrok-free.app/webhook/email-status",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"email\": \"demo@example.com\",\n  \"status\": \"sent\",\n  \"newsletterId\": 123456789,\n  \"timestamp\": \"2024-01-15T10:30:00.000Z\"\n}",
+        "options": {
+          "headers": {
+            "ngrok-skip-browser-warning": "true",
+            "Content-Type": "application/json"
+          }
+        }
+      },
+      "id": "log-email-sent",
+      "name": "Log Email Sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "wait-delay",
+      "name": "Wait 2s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [800, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://718b6f8581a1.ngrok-free.app/webhook/email-status",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"email\": \"demo@example.com\",\n  \"status\": \"delivered\",\n  \"newsletterId\": 123456789,\n  \"timestamp\": \"2024-01-15T10:31:00.000Z\"\n}",
+        "options": {
+          "headers": {
+            "ngrok-skip-browser-warning": "true",
+            "Content-Type": "application/json"
+          }
+        }
+      },
+      "id": "log-email-delivered",
+      "name": "Log Email Delivered",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "wait-delay-2",
+      "name": "Wait 3s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1200, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://718b6f8581a1.ngrok-free.app/webhook/email-status",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"email\": \"demo@example.com\",\n  \"status\": \"opened\",\n  \"newsletterId\": 123456789,\n  \"timestamp\": \"2024-01-15T10:32:00.000Z\"\n}",
+        "options": {
+          "headers": {
+            "ngrok-skip-browser-warning": "true",
+            "Content-Type": "application/json"
+          }
+        }
+      },
+      "id": "log-email-opened",
+      "name": "Log Email Opened",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1400, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Newsletter workflow completed successfully!\",\n  \"demo_flow\": {\n    \"subscribers_count\": {{ $node['Get Subscribers'].json.count || 0 }},\n    \"email_tested\": \"{{ $json.body.testEmail || 'demo@example.com' }}\",\n    \"statuses_logged\": [\"sent\", \"delivered\", \"opened\"],\n    \"timestamp\": \"{{ new Date().toISOString() }}\",\n    \"ngrok_url\": \"https://718b6f8581a1.ngrok-free.app\"\n  },\n  \"next_steps\": {\n    \"check_logs\": \"GET https://718b6f8581a1.ngrok-free.app/logs\",\n    \"view_subscribers\": \"GET https://718b6f8581a1.ngrok-free.app/subscribers\"\n  }\n}"
+      },
+      "id": "response",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1600, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Subscribers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Subscribers": {
+      "main": [
+        [
+          {
+            "node": "Log Email Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Email Sent": {
+      "main": [
+        [
+          {
+            "node": "Wait 2s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2s": {
+      "main": [
+        [
+          {
+            "node": "Log Email Delivered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Email Delivered": {
+      "main": [
+        [
+          {
+            "node": "Wait 3s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3s": {
+      "main": [
+        [
+          {
+            "node": "Log Email Opened",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Email Opened": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["demo", "newsletter", "ngrok"],
+  "triggerCount": 0,
+  "updatedAt": "2024-01-15T10:00:00.000Z",
+  "versionId": "2"
+}
