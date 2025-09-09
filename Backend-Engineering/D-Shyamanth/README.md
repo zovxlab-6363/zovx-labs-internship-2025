@@ -1,6 +1,6 @@
 # Newsletter System API
 
-A simple Express.js newsletter system with n8n webhook integration for demo purposes.
+A simple Express.js newsletter system with n8n webhook integration for zovx purposes.
 
 ## Features
 
